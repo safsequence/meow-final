@@ -6,8 +6,72 @@ import { db } from "./db";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { z } from "zod";
+import multer from "multer";
+import path from "path";
+import { promises as fs } from "fs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure multer for file uploads
+  const uploadDir = path.join(process.cwd(), 'uploads');
+  
+  // Ensure upload directory exists
+  try {
+    await fs.access(uploadDir);
+  } catch {
+    await fs.mkdir(uploadDir, { recursive: true });
+  }
+
+  const storage_multer = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+
+  const upload = multer({ 
+    storage: storage_multer,
+    limits: {
+      fileSize: 5 * 1024 * 1024 // 5MB limit
+    },
+    fileFilter: function (req, file, cb) {
+      // Check if file is an image
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only image files are allowed!'));
+      }
+    }
+  });
+
+  // Image upload endpoint
+  app.post('/api/upload/image', upload.single('image'), (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+
+      const imageUrl = `/api/uploads/${req.file.filename}`;
+      res.json({ 
+        message: 'Image uploaded successfully',
+        imageUrl: imageUrl,
+        filename: req.file.filename
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      res.status(500).json({ message: 'Upload failed' });
+    }
+  });
+
+  // Serve uploaded images
+  app.get('/api/uploads/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filepath = path.join(uploadDir, filename);
+    res.sendFile(filepath);
+  });
+
   // Categories API
   app.get("/api/categories", async (req, res) => {
     try {

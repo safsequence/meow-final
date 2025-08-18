@@ -16,6 +16,7 @@ import { z } from 'zod';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/layout/header';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 // Form validation schema
 const productFormSchema = z.object({
@@ -25,7 +26,7 @@ const productFormSchema = z.object({
   originalPrice: z.string().optional(),
   categoryId: z.string().min(1, 'Category is required'),
   brandId: z.string().min(1, 'Brand is required'),
-  image: z.string().url('Must be a valid URL'),
+  image: z.string().min(1, 'Image is required'),
   stockQuantity: z.number().min(0, 'Stock quantity must be non-negative'),
   tags: z.string().optional(),
   isNew: z.boolean().optional(),
@@ -518,9 +519,13 @@ export default function AdminProductsPage() {
                   name="image"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Image URL *</FormLabel>
+                      <FormLabel>Product Image *</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://example.com/image.jpg" {...field} />
+                        <ImageUpload
+                          value={field.value}
+                          onChange={field.onChange}
+                          disabled={updateProductMutation.isPending}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
