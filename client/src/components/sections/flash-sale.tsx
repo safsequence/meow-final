@@ -1,49 +1,57 @@
 import { Flame } from 'lucide-react';
 import ProductCard from '@/components/ui/product-card';
+import { useQuery } from '@tanstack/react-query';
+
+interface ApiProduct {
+  id: string;
+  name: string;
+  image: string;
+  price: number;
+  rating: number;
+  stock: number;
+  category: string;
+}
 
 export default function FlashSale() {
-  const flashSaleProducts = [
-    {
-      id: 1,
-      name: 'Premium Wet Cat Food (12 pack)',
-      image: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300',
-      price: 1200,
-      originalPrice: 2400,
-      discount: 50,
-      badge: '50% OFF',
-      badgeColor: 'red'
-    },
-    {
-      id: 2,
-      name: 'Interactive Dog Chew Toys',
-      image: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300',
-      price: 800,
-      originalPrice: 1333,
-      discount: 40,
-      badge: '40% OFF',
-      badgeColor: 'red'
-    },
-    {
-      id: 3,
-      name: 'Professional Grooming Kit',
-      image: 'https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300',
-      price: 1950,
-      originalPrice: 3000,
-      discount: 35,
-      badge: '35% OFF',
-      badgeColor: 'red'
-    },
-    {
-      id: 4,
-      name: 'Premium Training Treats',
-      image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300',
-      price: 600,
-      originalPrice: 1091,
-      discount: 45,
-      badge: '45% OFF',
-      badgeColor: 'red'
-    }
-  ];
+  const { data: allProducts = [], isLoading } = useQuery<ApiProduct[]>({
+    queryKey: ['/api/products'],
+  });
+
+  // Get random products for flash sale with discounts
+  const flashSaleProducts = (allProducts as ApiProduct[])
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 4)
+    .map((product: ApiProduct) => ({
+      id: parseInt(product.id) || Math.random(),
+      name: product.name,
+      image: product.image,
+      price: Math.floor(product.price * 0.7), // 30% discount
+      originalPrice: product.price,
+      discount: 30,
+      badge: '30% OFF',
+      badgeColor: 'red',
+      rating: product.rating,
+      reviews: Math.floor(Math.random() * 100) + 20,
+      stockStatus: product.stock > 0 ? 'In Stock' : 'Out of Stock'
+    }));
+
+  if (isLoading) {
+    return (
+      <section className="section-spacing bg-gradient-to-br from-red-50 to-orange-50">
+        <div className="responsive-container">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-red-600 mb-2 animate-fade-in">⚡ Flash Sale</h2>
+            <p className="text-gray-600 animate-fade-in" style={{ animationDelay: '0.1s' }}>Limited time offers - grab them before they're gone!</p>
+          </div>
+          <div className="responsive-grid">
+            {[...Array(4)].map((_, index) => (
+              <div key={index} className="h-64 bg-gray-200 animate-pulse rounded-lg"></div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="section-spacing bg-red-50">

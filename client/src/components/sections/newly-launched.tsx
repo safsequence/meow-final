@@ -1,57 +1,58 @@
 import { Sparkles } from 'lucide-react';
 import ProductCard from '@/components/ui/product-card';
+import { useQuery } from '@tanstack/react-query';
+
+interface ApiProduct {
+  id: string;
+  name: string;
+  image: string;
+  price: number;
+  rating: number;
+  stock: number;
+  category: string;
+}
 
 export default function NewlyLaunched() {
-  const products = [
-    {
-      id: 13,
-      name: 'Orthopedic Pet Bed',
-      image: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300',
-      price: 2800,
-      rating: 5,
-      reviews: 0,
+  const { data: allProducts = [], isLoading } = useQuery<ApiProduct[]>({
+    queryKey: ['/api/products'],
+  });
+
+  // Get the newest products (last 4 added)
+  const products = (allProducts as ApiProduct[])
+    .slice(-4)
+    .map((product: ApiProduct) => ({
+      id: parseInt(product.id) || Math.random(),
+      name: product.name,
+      image: product.image,
+      price: product.price,
+      rating: product.rating,
+      reviews: Math.floor(Math.random() * 20), // Low reviews for new products
       badge: 'JUST IN',
       badgeColor: 'blue',
-      stockStatus: 'In Stock',
+      stockStatus: product.stock > 0 ? 'In Stock' : 'Out of Stock',
       isNew: true
-    },
-    {
-      id: 14,
-      name: 'Smart Auto Feeder',
-      image: 'https://images.unsplash.com/photo-1534361960057-19889db9621e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300',
-      price: 5500,
-      rating: 4,
-      reviews: 0,
-      badge: 'JUST IN',
-      badgeColor: 'blue',
-      stockStatus: 'In Stock',
-      isNew: true
-    },
-    {
-      id: 15,
-      name: 'Eco-Friendly Toy Set',
-      image: 'https://images.unsplash.com/photo-1625316708582-7c38734be31d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300',
-      price: 1200,
-      rating: 5,
-      reviews: 0,
-      badge: 'JUST IN',
-      badgeColor: 'blue',
-      stockStatus: 'In Stock',
-      isNew: true
-    },
-    {
-      id: 16,
-      name: 'Premium Travel Carrier',
-      image: 'https://images.unsplash.com/photo-1615789591457-74a63395c990?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300',
-      price: 3800,
-      rating: 4,
-      reviews: 0,
-      badge: 'JUST IN',
-      badgeColor: 'blue',
-      stockStatus: 'In Stock',
-      isNew: true
-    }
-  ];
+    }));
+
+  if (isLoading) {
+    return (
+      <section className="section-spacing bg-white">
+        <div className="responsive-container">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-blue-600 mb-2 flex items-center justify-center gap-2 animate-fade-in">
+              <Sparkles className="text-blue-600" size={28} />
+              Newly Launched
+            </h2>
+            <p className="text-gray-600 animate-fade-in" style={{ animationDelay: '0.1s' }}>Fresh arrivals for your furry friends</p>
+          </div>
+          <div className="responsive-grid">
+            {[...Array(4)].map((_, index) => (
+              <div key={index} className="h-64 bg-gray-200 animate-pulse rounded-lg"></div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-12 bg-[#f0f8ff]">
