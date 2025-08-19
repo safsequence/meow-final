@@ -17,15 +17,11 @@ export default function BestsellersDogs() {
     queryKey: ['/api/products'],
   });
 
-  // Filter products for dog-related categories and get top-rated ones
+  // Show specific dog-related products
   const products = (allProducts as ApiProduct[])
     .filter((product: ApiProduct) => 
-      product.category === 'dog-food' || 
-      product.category === 'toys-treats' ||
-      product.category === 'accessories'
+      product.category === 'Dog Food'
     )
-    .sort((a: ApiProduct, b: ApiProduct) => b.rating - a.rating)
-    .slice(0, 4)
     .map((product: ApiProduct) => ({
       id: parseInt(product.id) || Math.random(),
       name: product.name,

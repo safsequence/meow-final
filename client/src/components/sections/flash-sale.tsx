@@ -17,10 +17,12 @@ export default function FlashSale() {
     queryKey: ['/api/products'],
   });
 
-  // Get random products for flash sale with discounts
+  // Show specific products on flash sale
   const flashSaleProducts = (allProducts as ApiProduct[])
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 4)
+    .filter((product: ApiProduct) => 
+      product.name === 'Premium Dry Cat Food - Adult' || 
+      product.name === 'Clumping Cat Litter - Premium'
+    )
     .map((product: ApiProduct) => ({
       id: parseInt(product.id) || Math.random(),
       name: product.name,

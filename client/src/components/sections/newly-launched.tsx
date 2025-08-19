@@ -17,9 +17,12 @@ export default function NewlyLaunched() {
     queryKey: ['/api/products'],
   });
 
-  // Get the newest products (last 4 added)
+  // Show specific new products
   const products = (allProducts as ApiProduct[])
-    .slice(-4)
+    .filter((product: ApiProduct) => 
+      product.name === 'Interactive Feather Wand Toy' || 
+      product.name === 'Premium Puppy Formula'
+    )
     .map((product: ApiProduct) => ({
       id: parseInt(product.id) || Math.random(),
       name: product.name,

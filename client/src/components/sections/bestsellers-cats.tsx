@@ -17,15 +17,13 @@ export default function BestsellersCats() {
     queryKey: ['/api/products'],
   });
 
-  // Filter products for cat-related categories and get top-rated ones
+  // Show specific cat-related products
   const products = (allProducts as ApiProduct[])
     .filter((product: ApiProduct) => 
-      product.category === 'cat-food' || 
-      product.category === 'cat-toys' ||
-      product.category === 'cat-litter'
+      product.category === 'Cat Food' || 
+      product.category === 'Cat Toys' ||
+      product.category === 'Cat Litter'
     )
-    .sort((a: ApiProduct, b: ApiProduct) => b.rating - a.rating)
-    .slice(0, 4)
     .map((product: ApiProduct) => ({
       id: parseInt(product.id) || Math.random(),
       name: product.name,
