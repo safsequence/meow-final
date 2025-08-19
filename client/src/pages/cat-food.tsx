@@ -8,7 +8,7 @@ import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import ProductCard from '@/components/product/product-card';
 import AnalyticsBar from '@/components/product/analytics-bar';
-import { getProductsByCategory, type Product } from '@/lib/product-data';
+import { useQuery } from '@tanstack/react-query';
 
 const catFoodCategories = [
   'Adult Food',
@@ -26,19 +26,52 @@ const catFoodCategories = [
   'Canned Food'
 ];
 
+interface ApiProduct {
+  id: string;
+  name: string;
+  image: string;
+  price: number;
+  rating: number;
+  stock: number;
+  category: string;
+  description?: string;
+}
+
 export default function CatFoodPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Get dynamic products from centralized data
-  const allProducts = getProductsByCategory('cat-food');
+  // Get real products from API
+  const { data: allApiProducts = [], isLoading } = useQuery<ApiProduct[]>({
+    queryKey: ['/api/products'],
+  });
+  
+  // Filter for cat-related products only
+  const catProducts = allApiProducts.filter((product: ApiProduct) => 
+    product.category === 'Cat Food' || 
+    product.category === 'Cat Toys' ||
+    product.category === 'Cat Litter'
+  );
+  
+  // Convert to display format
+  const allProducts = catProducts.map((product: ApiProduct) => ({
+    id: parseInt(product.id) || Math.random(),
+    name: product.name,
+    image: product.image,
+    price: product.price,
+    rating: product.rating,
+    reviews: Math.floor(Math.random() * 100) + 10,
+    category: 'cat-food',
+    description: product.description || 'Premium cat product',
+    tags: ['Cat', 'Premium'],
+    stock: product.stock
+  }));
   
   // Filter products based on search and category
   const filteredProducts = allProducts.filter(product => {
     const matchesCategory = selectedCategory === 'All';
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+                         product.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -49,6 +82,24 @@ export default function CatFoodPage() {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="pt-24 pb-8 px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, index) => (
+                <div key={index} className="h-64 bg-gray-200 animate-pulse rounded-lg"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
